@@ -1,20 +1,16 @@
 package co.edu.cesde.ga.domain.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.IdClass;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 @Entity
 @Table(name = "user_role")
+@IdClass(UserRole.class)
 @Getter
 @Setter
 @ToString
-
 public class UserRole {
 
     @Id
@@ -25,6 +21,14 @@ public class UserRole {
     @Column(name = "role_id", nullable = false)
     private Long roleId;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "role_id", insertable = false, updatable = false)
+    private Role role;
+
     public UserRole() {
     }
 
@@ -33,10 +37,11 @@ public class UserRole {
         this.roleId = roleId;
     }
 
-
-
     @Override
     public String toString() {
-        return "UserRole { userId=" + userId + ", roleId=" + roleId + " }";
+        return "UserRole{" +
+                "userId=" + userId +
+                ", roleId=" + roleId +
+                '}';
     }
 }

@@ -1,14 +1,13 @@
 package co.edu.cesde.ga.domain.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.util.List;
 
 @Entity
 @Table(name = "role")
@@ -21,6 +20,10 @@ public class Role {
     @NotNull
     @Column(name = "role_id", nullable = false)
     private Long roleId;
+
+    // Un rol puede tener muchos registros en UserRole
+    @OneToMany(mappedBy = "role")
+    private List<UserRole> userRoles;
 
     @NotBlank
     @Column(name = "name", nullable = false, unique = true)
@@ -38,8 +41,6 @@ public class Role {
         this.name = name;
         this.description = description;
     }
-
-
 
     @Override
     public String toString() {

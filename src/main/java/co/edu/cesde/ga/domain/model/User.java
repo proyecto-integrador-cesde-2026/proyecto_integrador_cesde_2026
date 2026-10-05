@@ -8,6 +8,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -19,6 +20,10 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
+
+    // Un usuario puede tener muchos registros en UserRole
+    @OneToMany(mappedBy = "user")
+    private List<UserRole> userRoles;
 
     @NotBlank(message = "El username es obligatorio")
     @Column(nullable = false)
@@ -53,7 +58,6 @@ public class User {
         this.createdAt = createdAt;
     }
 
-
     @Override
     public String toString() {
         return "User { userId=" + userId +
@@ -62,3 +66,4 @@ public class User {
                 ", status=" + status + " }";
     }
 }
+

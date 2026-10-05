@@ -6,6 +6,7 @@ import co.edu.cesde.ga.exceptions.NotFoundException;
 import co.edu.cesde.ga.domain.model.GroupSubjects;
 import co.edu.cesde.ga.application.port.out.GroupSubjectsRepository;
 import co.edu.cesde.ga.application.port.in.GroupSubjectService;
+
 import java.util.List;
 
 public class GroupSubjectServiceImpl implements GroupSubjectService {
@@ -28,8 +29,8 @@ public class GroupSubjectServiceImpl implements GroupSubjectService {
         }
 
         if (groupSubjectsRepository.exists(
-                groupSubject.getGroupId(),
-                groupSubject.getSubjectId())) {
+                groupSubject.getGroup().getGroupId(),
+                groupSubject.getSubject().getSubjectId())) {
 
             throw new DuplicateException("La materia ya está asignada al grupo");
         }
@@ -49,8 +50,8 @@ public class GroupSubjectServiceImpl implements GroupSubjectService {
         }
 
         if (!groupSubjectsRepository.exists(
-                groupSubject.getGroupId(),
-                groupSubject.getSubjectId())) {
+                groupSubject.getGroup().getGroupId(),
+                groupSubject.getSubject().getSubjectId())) {
 
             throw new NotFoundException("Asignación no encontrada");
         }
@@ -59,9 +60,11 @@ public class GroupSubjectServiceImpl implements GroupSubjectService {
     }
 
     @Override
-    public boolean delete(Long groupId, String subjectId) {
+    public boolean delete(Long groupId, Long subjectId) {
 
-        if (groupId == null || groupId <= 0L || !isNotBlank(subjectId)) {
+        if (groupId == null || groupId <= 0L ||
+                subjectId == null || subjectId <= 0L) {
+
             throw new InvalidDataException("Datos inválidos");
         }
 
@@ -73,9 +76,11 @@ public class GroupSubjectServiceImpl implements GroupSubjectService {
     }
 
     @Override
-    public GroupSubjects findByIds(Long groupId, String subjectId) {
+    public GroupSubjects findByIds(Long groupId, Long subjectId) {
 
-        if (groupId == null || groupId <= 0L || !isNotBlank(subjectId)) {
+        if (groupId == null || groupId <= 0L ||
+                subjectId == null || subjectId <= 0L) {
+
             throw new InvalidDataException("Datos inválidos");
         }
 
@@ -90,9 +95,11 @@ public class GroupSubjectServiceImpl implements GroupSubjectService {
     }
 
     @Override
-    public boolean exists(Long groupId, String subjectId) {
+    public boolean exists(Long groupId, Long subjectId) {
 
-        if (groupId == null || groupId <= 0L || !isNotBlank(subjectId)) {
+        if (groupId == null || groupId <= 0L ||
+                subjectId == null || subjectId <= 0L) {
+
             throw new InvalidDataException("Datos inválidos");
         }
 
@@ -105,14 +112,16 @@ public class GroupSubjectServiceImpl implements GroupSubjectService {
     }
 
     private boolean isInvalidGroupSubject(GroupSubjects groupSubject) {
-        return groupSubject == null
-                || groupSubject.getGroupId() == null
-                || groupSubject.getGroupId() <= 0L
-                || !isNotBlank(groupSubject.getSubjectId())
-                || groupSubject.getTeacherId() <= 0L;
-    }
 
-    private boolean isNotBlank(String value) {
-        return value != null && !value.trim().isEmpty();
+        return groupSubject == null
+                || groupSubject.getGroup() == null
+                || groupSubject.getGroup().getGroupId() == null
+                || groupSubject.getGroup().getGroupId() <= 0L
+                || groupSubject.getSubject() == null
+                || groupSubject.getSubject().getSubjectId() == null
+                || groupSubject.getSubject().getSubjectId() <= 0L
+                || groupSubject.getTeacher() == null
+                || groupSubject.getTeacher().getUserId() == null
+                || groupSubject.getTeacher().getUserId() <= 0L;
     }
 }

@@ -101,10 +101,10 @@ public class GroupServiceImpl implements GroupsService {
 
     private boolean isInvalidGroups(Groups groups){
         return groups == null
-                || groups.getProgramId() == null
-                || groups.getProgramId() <= 0L
-                || groups.getPeriodId() == null
-                || groups.getPeriodId() <= 0L
+                || groups.getProgram().getProgramId() == null
+                || groups.getProgram().getProgramId() <= 0L
+                || groups.getPeriod().getPeriodId() == null
+                || groups.getPeriod().getPeriodId() <= 0L
                 || !isNotBlank(groups.getShift())
                 || !isNotBlank(groups.getCode());
     }

@@ -95,8 +95,8 @@ public class GradesServiceImpl implements GradesService {
 
     private boolean isInvalidGrade(Grade grade) {
         return grade == null
-                || grade.getGroupSubjectId() <= 0L
-                || grade.getStudentId() <= 0L
+                || grade.getGroupSubject().getGroupSubjectId() == null
+                || grade.getStudent().getStudentId() == null
                 || !isNotBlank(grade.getObservation());
     }
 

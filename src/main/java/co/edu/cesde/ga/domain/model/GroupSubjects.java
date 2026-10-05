@@ -1,17 +1,12 @@
 package co.edu.cesde.ga.domain.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.util.List;
 
 @Entity
 @Table(name = "group_subjects")
@@ -25,38 +20,46 @@ public class GroupSubjects {
     @Column(name = "group_subject_id")
     private Long groupSubjectId;
 
+    // Muchos registros de grupo-materia pertenecen a un grupo
     @NotNull(message = "El grupo es obligatorio")
-    @Column(name = "group_id", nullable = false)
-    private Long groupId;
+    @ManyToOne
+    @JoinColumn(name = "group_id", nullable = false)
+    private Groups group;
 
-    @NotBlank(message = "La materia es obligatoria")
-    @Column(name = "subject_id", nullable = false)
-    private String subjectId;
+    // Muchos registros de grupo-materia pertenecen a una materia
+    @NotNull(message = "La materia es obligatoria")
+    @ManyToOne
+    @JoinColumn(name = "subject_id", nullable = false)
+    private Subject subject;
 
+    // Muchos registros de grupo-materia pertenecen a un profesor
     @NotNull(message = "El profesor es obligatorio")
-    @Column(name = "teacher_id", nullable = false)
-    private Long teacherId;
+    @ManyToOne
+    @JoinColumn(name = "teacher_id", nullable = false)
+    private Teacher teacher;
+
+    // Un grupo-materia puede tener muchas notas
+    @OneToMany(mappedBy = "groupSubject")
+    private List<Grade> grades;
 
     public GroupSubjects() {
     }
 
-    public GroupSubjects(Long groupSubjectId, Long groupId,
-                         String subjectId, Long teacherId) {
+    public GroupSubjects(Long groupSubjectId, Groups group,
+                         Subject subject, Teacher teacher) {
         this.groupSubjectId = groupSubjectId;
-        this.groupId = groupId;
-        this.subjectId = subjectId;
-        this.teacherId = teacherId;
+        this.group = group;
+        this.subject = subject;
+        this.teacher = teacher;
     }
-
-
 
     @Override
     public String toString() {
         return "GroupSubjects{" +
                 "groupSubjectId=" + groupSubjectId +
-                ", groupId=" + groupId +
-                ", subjectId='" + subjectId + '\'' +
-                ", teacherId=" + teacherId +
+                ", groupId=" + group +
+                ", subjectId=" + subject +
+                ", teacherId=" + teacher +
                 '}';
     }
 }

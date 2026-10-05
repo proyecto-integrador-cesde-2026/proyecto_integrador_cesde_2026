@@ -1,14 +1,11 @@
 package co.edu.cesde.ga.domain.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.Id;
-import jakarta.persistence.Column;
+import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.List;
 
 @Entity
 @Table(name = "teacher")
@@ -21,6 +18,10 @@ public class Teacher extends Person {
     @Column(name = "teacher_id", nullable = false)
     private Long teacherId;
 
+    // Un profesor puede tener muchos grupos-materia
+    @OneToMany(mappedBy = "teacher")
+    private List<GroupSubjects> groupSubjects;
+
     public Teacher() {
     }
 
@@ -28,8 +29,6 @@ public class Teacher extends Person {
                    String firstName, String lastName, String status) {
         super(userId, code, documentNumber, firstName, lastName, status);
     }
-
-
 
     @Override
     public String getRole() {

@@ -2,7 +2,6 @@ package co.edu.cesde.ga.domain.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -20,14 +19,19 @@ public class Enrollment {
     @Column(name = "enrollment_id_pk")
     private Long enrollmentId;
 
-    @Column(name = "student_id", nullable = false)
-    private Long studentId;
+    // Relación: muchas matrículas pertenecen a un estudiante
+    @ManyToOne
+    @JoinColumn(name = "student_id", nullable = false)
+    private Student student;
 
-    @Column(name = "group_id", nullable = false)
-    private Long groupId;
+    // Relación: muchas matrículas pertenecen a un grupo
+    @ManyToOne
+    @JoinColumn(name = "group_id", nullable = false)
+    private Groups group;
 
-    @Column(name = "period_id", nullable = false)
-    private Long periodId;
+    @ManyToOne
+    @JoinColumn(name = "period_id", nullable = false)
+    private Period period;
 
     @Column(name = "status", nullable = false)
     private String status;
@@ -41,17 +45,16 @@ public class Enrollment {
     public Enrollment() {
     }
 
-    public Enrollment(Long enrollmentId, Long studentId, Long groupId,
-                      Long periodId, String status) {
+    public Enrollment(Long enrollmentId, Student student, Groups group,
+                      Period period, String status) {
         this.enrollmentId = enrollmentId;
-        this.studentId = studentId;
-        this.groupId = groupId;
-        this.periodId = periodId;
+        this.student = student;
+        this.group = group;
+        this.period = period;
         this.status = status;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
-
 
     @PrePersist
     protected void onCreate() {
@@ -69,9 +72,9 @@ public class Enrollment {
     public String toString() {
         return "=== ENROLLMENT INFO ===\n" +
                 "ID: " + enrollmentId + "\n" +
-                "Student ID: " + studentId + "\n" +
-                "Group ID: " + groupId + "\n" +
-                "Period ID: " + periodId + "\n" +
+                "Student ID: " + student + "\n" +
+                "Group ID: " + group + "\n" +
+                "Period ID: " + period + "\n" +
                 "Estado: " + status;
     }
 }

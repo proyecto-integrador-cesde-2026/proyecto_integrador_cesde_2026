@@ -1,11 +1,6 @@
 package co.edu.cesde.ga.domain.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -14,6 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.util.List;
 
 @Entity
 @Table(name = "grades")
@@ -27,13 +24,16 @@ public class Grade {
     @Column(name = "grade_id")
     private Long gradeId;
 
+
     @NotNull(message = "El grupo de materia es obligatorio")
-    @Column(name = "group_subject_id", nullable = false)
-    private Long groupSubjectId;
+    @ManyToOne
+    @JoinColumn(name = "group_subject_id", nullable = false)
+    private GroupSubjects groupSubject;
 
     @NotNull(message = "El estudiante es obligatorio")
-    @Column(name = "student_id", nullable = false)
-    private Long studentId;
+    @ManyToOne
+    @JoinColumn(name = "student_id", nullable = false)
+    private Student student;
 
     @Min(value = 0, message = "La nota mínima es 0")
     @Max(value = 5, message = "La nota máxima es 5")
@@ -47,11 +47,11 @@ public class Grade {
     public Grade() {
     }
 
-    public Grade(Long gradeId, Long groupSubjectId, Long studentId,
+    public Grade(Long gradeId,GroupSubjects groupSubject,Student student,
                  int finalScore, String observation) {
         this.gradeId = gradeId;
-        this.groupSubjectId = groupSubjectId;
-        this.studentId = studentId;
+        this.groupSubject = groupSubject;
+        this.student = student;
         this.finalScore = finalScore;
         this.observation = observation;
     }
@@ -62,8 +62,8 @@ public class Grade {
     public String toString() {
         return "Grade{" +
                 "gradeId=" + gradeId +
-                ", groupSubjectId=" + groupSubjectId +
-                ", studentId=" + studentId +
+                ", groupSubjectId=" + groupSubject +
+                ", studentId=" + student +
                 ", finalScore=" + finalScore +
                 ", observation='" + observation + '\'' +
                 '}';

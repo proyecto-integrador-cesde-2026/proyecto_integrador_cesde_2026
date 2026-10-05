@@ -94,11 +94,11 @@ public class SubjectServiceImpl implements SubjectService {
         return subjectsRepository.existsByCode(code);
     }
 
-
     @Override
     public List<Subject> findAll() {
         return subjectsRepository.findAll();
     }
+
 
     private boolean isInvalidSubject(Subject subject) {
 
@@ -107,7 +107,9 @@ public class SubjectServiceImpl implements SubjectService {
                 || !isNotBlank(subject.getCode())
                 || !isNotBlank(subject.getName())
                 || subject.getCredits() <= 0
-                || subject.getProgramId() <= 0L;
+                || subject.getProgram() == null
+                || subject.getProgram().getProgramId() == null
+                || subject.getProgram().getProgramId() <= 0L;
     }
 
     private boolean isNotBlank(String value) {

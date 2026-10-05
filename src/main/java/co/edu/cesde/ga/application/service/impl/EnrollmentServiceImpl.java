@@ -94,9 +94,9 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private boolean isInvalidEnrollment(Enrollment enrollment) {
         return enrollment == null
                 || enrollment.getEnrollmentId() == null
-                || enrollment.getStudentId() == null
-                || enrollment.getGroupId() == null
-                || enrollment.getPeriodId() == null
+                || enrollment.getStudent().getStudentId() == null
+                || enrollment.getGroup().getGroupId() == null
+                || enrollment.getPeriod().getPeriodId() == null
                 || !isNotBlank(enrollment.getStatus());
     }
 

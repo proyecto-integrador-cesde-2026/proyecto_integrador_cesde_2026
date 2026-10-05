@@ -67,10 +67,12 @@ public class GroupRepositoryInMemory implements GroupRepository {
         }
 
         for (Groups group : groups) {
-            if (programId.equals(group.getProgramId())) {
+            if (group.getProgram() != null
+                    && programId.equals(group.getProgram().getProgramId())) {
                 result.add(group);
             }
         }
+
         return result;
     }
 
@@ -90,7 +92,10 @@ public class GroupRepositoryInMemory implements GroupRepository {
     @Override
     public boolean delete(Long groupId) {
         Groups group = findById(groupId);
-        if (group == null) return false;
+
+        if (group == null) {
+            return false;
+        }
 
         groups.remove(group);
         return true;

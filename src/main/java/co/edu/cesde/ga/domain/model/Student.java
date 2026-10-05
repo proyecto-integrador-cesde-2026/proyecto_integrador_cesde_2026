@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import java.util.List;
 
 @Entity
 @Table(name = "students")
@@ -16,6 +17,12 @@ public class Student {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "student_id")
     private Long studentId;
+
+    @OneToMany(mappedBy = "student")
+    private List<Enrollment> enrollments;
+
+    @OneToMany(mappedBy = "student")
+    private List<Grade> grades;
 
     @Column(nullable = false, unique = true)
     private String code;

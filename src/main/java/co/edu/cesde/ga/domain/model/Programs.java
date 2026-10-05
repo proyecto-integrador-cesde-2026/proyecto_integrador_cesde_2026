@@ -1,15 +1,12 @@
 package co.edu.cesde.ga.domain.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.util.List;
 
 @Entity
 @Table(name = "programs")
@@ -22,6 +19,12 @@ public class Programs {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long programId;
+
+    @OneToMany(mappedBy = "program")
+    private List<Groups> groups;
+
+    @OneToMany(mappedBy = "program")
+    private List<Subject> subjects;
 
     @NotBlank
     private String code;
