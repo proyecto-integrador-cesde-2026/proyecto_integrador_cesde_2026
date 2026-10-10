@@ -1,80 +1,66 @@
 package co.edu.cesde.ga.infrastructure.adapter.out.persistence.inmemory;
 
 import co.edu.cesde.ga.domain.model.Grade;
-import co.edu.cesde.ga.application.port.out.GradesRepository;
+import co.edu.cesde.ga.domain.model.port.out.GradesRepository;
+import co.edu.cesde.ga.infrastructure.adapter.out.persistence.jpa.GradesJpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class GradesRepositoryInMemory implements GradesRepository {
 
-    private List<Grade> grades;
-    private long nextGradeId;
+    private final GradesJpaRepository gradesJpaRepository;
 
-    public GradesRepositoryInMemory() {
-        this.grades = new ArrayList<>();
-        this.nextGradeId = 1L;
+    public GradesRepositoryInMemory(
+            GradesJpaRepository gradesJpaRepository) {
+        this.gradesJpaRepository = gradesJpaRepository;
     }
 
     @Override
     public Grade create(Grade grade) {
-        if (grade == null) {
-            return null;
-        }
-
-        grade.setGradeId(nextGradeId++);
-        grades.add(grade);
-        return grade;
+        return gradesJpaRepository.save(grade);
     }
 
     @Override
     public boolean existsById(long gradeId) {
-        return findById(gradeId) != null;
+        return gradesJpaRepository.existsById(gradeId);
     }
 
     @Override
     public Grade findById(long gradeId) {
-        if (gradeId <= 0) {
-            return null;
-        }
-
-        for (Grade grade : grades) {
-            if (grade.getGradeId() == gradeId) {
-                return grade;
-            }
-        }
-        return null;
+        return gradesJpaRepository.findById(gradeId).orElse(null);
     }
 
     @Override
     public List<Grade> findAll() {
-        return new ArrayList<>(grades);
+        return gradesJpaRepository.findAll();
     }
 
     @Override
     public boolean delete(long gradeId) {
-        Grade grade = findById(gradeId);
-        if (grade == null) return false;
+        if (!gradesJpaRepository.existsById(gradeId)) {
+            return false;
+        }
 
-        grades.remove(grade);
+        gradesJpaRepository.deleteById(gradeId);
         return true;
     }
 
     @Override
     public int count() {
-        return grades.size();
+        return (int) gradesJpaRepository.count();
     }
 
     @Override
-    public boolean update(Grade updatedGrade) {
-        if (updatedGrade == null) return false;
-
-        for (int i = 0; i < grades.size(); i++) {
-            if (updatedGrade.getGradeId() == grades.get(i).getGradeId()) {
-                grades.set(i, updatedGrade);
-                return true;
-            }
+    public boolean update(Grade grade) {
+        if (grade == null
+                || !gradesJpaRepository.existsById(grade.getGradeId())) {
+            return false;
         }
-        return false;
+
+        gradesJpaRepository.save(grade);
+        return true;
     }
 }
+

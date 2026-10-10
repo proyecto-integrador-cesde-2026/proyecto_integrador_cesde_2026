@@ -1,19 +1,20 @@
 package co.edu.cesde.ga.infrastructure.adapter.out.persistence.inmemory;
 
 import co.edu.cesde.ga.domain.model.Enrollment;
-import co.edu.cesde.ga.application.port.out.EnrollmentRepository;
+import co.edu.cesde.ga.domain.model.port.out.EnrollmentRepository;
+import co.edu.cesde.ga.infrastructure.adapter.out.persistence.jpa.EnrollmentJpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class EnrollmentRepositoryInMemory implements EnrollmentRepository {
 
-    private List<Enrollment> enrollments;
-    private Long nextEnrollmentId;
+    private final EnrollmentJpaRepository enrollmentJpaRepository;
 
-    public EnrollmentRepositoryInMemory() {
-        this.enrollments = new ArrayList<>();
-        this.nextEnrollmentId = 1L;
+    public EnrollmentRepositoryInMemory(
+            EnrollmentJpaRepository enrollmentJpaRepository) {
+        this.enrollmentJpaRepository = enrollmentJpaRepository;
     }
 
     @Override
@@ -21,60 +22,52 @@ public class EnrollmentRepositoryInMemory implements EnrollmentRepository {
         if (enrollment == null) {
             return null;
         }
-
-        enrollment.setEnrollmentId(nextEnrollmentId++);
-        enrollments.add(enrollment);
-        return enrollment;
-    }
-
-    @Override
-    public boolean existsById(Long enrollmentId) {
-        return findById(enrollmentId) != null;
-    }
-
-    @Override
-    public Enrollment findById(Long enrollmentId) {
-        if (enrollmentId <= 0) {
-            return null;
-        }
-
-        for (Enrollment enrollment : enrollments) {
-            if (enrollment.getEnrollmentId() == enrollmentId) {
-                return enrollment;
-            }
-        }
-        return null;
+        return enrollmentJpaRepository.save(enrollment);
     }
 
     @Override
     public List<Enrollment> findAll() {
-        return new ArrayList<>(enrollments);
+        return enrollmentJpaRepository.findAll();
+    }
+
+    @Override
+    public Enrollment findById(Long enrollmentId) {
+        return enrollmentJpaRepository.findById(enrollmentId).orElse(null);
     }
 
     @Override
     public boolean delete(Long enrollmentId) {
-        Enrollment enrollment = findById(enrollmentId);
-        if (enrollment == null) return false;
-
-        enrollments.remove(enrollment);
+        if (!enrollmentJpaRepository.existsById(enrollmentId)) {
+            return false;
+        }
+        enrollmentJpaRepository.deleteById(enrollmentId);
         return true;
     }
 
     @Override
-    public int count() {
-        return enrollments.size();
+    public boolean update(Enrollment enrollment) {
+        if (enrollment == null || enrollment.getEnrollmentId() == null
+                || !enrollmentJpaRepository.existsById(enrollment.getEnrollmentId())) {
+            return false;
+        }
+        enrollmentJpaRepository.save(enrollment);
+        return true;
     }
 
     @Override
-    public boolean update(Enrollment updatedEnrollment) {
-        if (updatedEnrollment == null) return false;
-
-        for (int i = 0; i < enrollments.size(); i++) {
-            if (updatedEnrollment.getEnrollmentId() == enrollments.get(i).getEnrollmentId()) {
-                enrollments.set(i, updatedEnrollment);
-                return true;
-            }
+    public boolean existsById(Long enrollmentId) {
+        if (enrollmentId == null || enrollmentId <= 0) {
+            return false;
         }
-        return false;
+
+        return enrollmentJpaRepository.existsById(enrollmentId);
     }
+
+    @Override
+    public int count() {
+        return (int) enrollmentJpaRepository.count();
+    }
+
+
 }
+

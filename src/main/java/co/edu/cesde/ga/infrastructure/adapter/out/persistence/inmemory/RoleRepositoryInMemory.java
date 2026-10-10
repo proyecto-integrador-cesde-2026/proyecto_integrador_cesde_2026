@@ -1,87 +1,69 @@
 package co.edu.cesde.ga.infrastructure.adapter.out.persistence.inmemory;
 
 import co.edu.cesde.ga.domain.model.Role;
-import co.edu.cesde.ga.application.port.out.RoleRepository;
+import co.edu.cesde.ga.domain.model.port.out.RoleRepository;
+import co.edu.cesde.ga.infrastructure.adapter.out.persistence.jpa.RoleJpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class RoleRepositoryInMemory implements RoleRepository {
 
-    private List<Role> roles;
-    private long nextRoleId;
+    private final RoleJpaRepository roleJpaRepository;
 
-    public RoleRepositoryInMemory() {
-        this.roles = new ArrayList<>();
-        this.nextRoleId = 1L;
+    public RoleRepositoryInMemory(RoleJpaRepository roleJpaRepository) {
+        this.roleJpaRepository = roleJpaRepository;
     }
 
     @Override
     public Role create(Role role) {
-        if (role == null) return null;
-
-        if (existsByName(role.getName())) return null;
-
-        role.setRoleId(nextRoleId++);
-        roles.add(role);
-        return role;
+        return roleJpaRepository.save(role);
     }
 
     @Override
     public boolean existsByName(String name) {
-        if (name == null || name.isBlank()) return false;
-        return findByName(name) != null;
+        return roleJpaRepository.existsByName(name);
     }
 
     @Override
     public Role findByName(String name) {
-        if (name == null || name.isBlank()) return null;
-
-        for (Role role : roles) {
-            if (name.equals(role.getName())) return role;
-        }
-        return null;
+        return roleJpaRepository.findByName(name);
     }
 
     @Override
     public List<Role> findAll() {
-        return new ArrayList<>(roles);
+        return roleJpaRepository.findAll();
     }
 
     @Override
     public Role findById(long roleId) {
-        if (roleId <= 0) return null;
-
-        for (Role role : roles) {
-            if (roleId == role.getRoleId()) return role;
-        }
-        return null;
+        return roleJpaRepository.findById(roleId).orElse(null);
     }
 
     @Override
     public boolean delete(long roleId) {
-        Role role = findById(roleId);
-        if (role == null) return false;
+        if (!roleJpaRepository.existsById(roleId)) {
+            return false;
+        }
 
-        roles.remove(role);
+        roleJpaRepository.deleteById(roleId);
         return true;
     }
 
     @Override
     public int count() {
-        return roles.size();
+        return (int) roleJpaRepository.count();
     }
 
     @Override
-    public boolean update(Role updatedRole) {
-        if (updatedRole == null) return false;
-
-        for (int i = 0; i < roles.size(); i++) {
-            if (updatedRole.getRoleId() == roles.get(i).getRoleId()) {
-                roles.set(i, updatedRole);
-                return true;
-            }
+    public boolean update(Role role) {
+        if (role == null || !roleJpaRepository.existsById(role.getRoleId())) {
+            return false;
         }
-        return false;
+
+        roleJpaRepository.save(role);
+        return true;
     }
 }
+

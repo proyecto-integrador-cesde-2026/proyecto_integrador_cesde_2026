@@ -1,5 +1,6 @@
 package co.edu.cesde.ga.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -26,7 +27,7 @@ public class User {
     private List<UserRole> userRoles;
 
     @NotBlank(message = "El username es obligatorio")
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String username;
 
     @NotBlank(message = "El email es obligatorio")
@@ -34,6 +35,7 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @JsonProperty("password")
     @NotBlank(message = "La contraseña es obligatoria")
     @Column(nullable = false)
     private String passwordHash;

@@ -1,72 +1,64 @@
 package co.edu.cesde.ga.infrastructure.adapter.out.persistence.inmemory;
 
 import co.edu.cesde.ga.domain.model.Period;
-import co.edu.cesde.ga.application.port.out.PeriodRepository;
+import co.edu.cesde.ga.domain.model.port.out.PeriodRepository;
+import co.edu.cesde.ga.infrastructure.adapter.out.persistence.jpa.PeriodJpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
+@Repository
 public class PeriodRepositoryInMemory implements PeriodRepository {
 
-    // Lista sincronizada para seguridad en hilos (opcional)
-    private final List<Period> periods = Collections.synchronizedList(new ArrayList<>());
+    private final PeriodJpaRepository periodJpaRepository;
+
+    public PeriodRepositoryInMemory(PeriodJpaRepository periodJpaRepository) {
+        this.periodJpaRepository = periodJpaRepository;
+    }
 
     @Override
     public Period create(Period period) {
-        // Evitamos IDs duplicados
-        if (findById(period.getPeriodId()) == null) {
-            periods.add(period);
-            return period;
-        }
-        return null; // ya existe
+        return periodJpaRepository.save(period);
     }
-    @Override
-    public boolean existsById(Long periodId) {
-        if (periodId == null || periodId <= 0) {
-            return false;
-        }
 
-        for (Period period : periods) {
-            if (period.getPeriodId().equals(periodId)) {
-                return true;
-            }
-        }
-        return false;
-    }
     @Override
     public List<Period> findAll() {
-        return new ArrayList<>(periods); // devolvemos copia
+        return periodJpaRepository.findAll();
     }
 
     @Override
     public Period findById(Long periodId) {
-        for (Period p : periods) {
-            if (p.getPeriodId() == periodId) {
-                return p;
-            }
-        }
-        return null; // no encontrado
+        return periodJpaRepository.findById(periodId).orElse(null);
     }
 
     @Override
     public boolean delete(Long periodId) {
-        return periods.removeIf(p -> p.getPeriodId() == periodId);
+        if (!periodJpaRepository.existsById(periodId)) {
+            return false;
+        }
+
+        periodJpaRepository.deleteById(periodId);
+        return true;
     }
 
     @Override
     public int count() {
-        return periods.size();
+        return (int) periodJpaRepository.count();
     }
 
     @Override
     public boolean update(Period period) {
-        for (int i = 0; i < periods.size(); i++) {
-            if (periods.get(i).getPeriodId() == period.getPeriodId()) {
-                periods.set(i, period);
-                return true;
-            }
+        if (period == null || period.getPeriodId() == null
+                || !periodJpaRepository.existsById(period.getPeriodId())) {
+            return false;
         }
-        return false; // no encontrado
+
+        periodJpaRepository.save(period);
+        return true;
+    }
+
+    @Override
+    public boolean existsById(Long periodId) {
+        return periodJpaRepository.existsById(periodId);
     }
 }

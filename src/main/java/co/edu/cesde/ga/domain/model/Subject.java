@@ -21,6 +21,7 @@ public class Subject {
     @Id
     @NotNull
     @Column(name = "subject_id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long subjectId;
 
     @OneToMany(mappedBy = "subject")

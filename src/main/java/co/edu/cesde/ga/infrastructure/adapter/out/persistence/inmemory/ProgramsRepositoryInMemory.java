@@ -1,77 +1,69 @@
 package co.edu.cesde.ga.infrastructure.adapter.out.persistence.inmemory;
 
 import co.edu.cesde.ga.domain.model.Programs;
-import co.edu.cesde.ga.application.port.out.ProgramsRepository;
+import co.edu.cesde.ga.domain.model.port.out.ProgramsRepository;
+import co.edu.cesde.ga.infrastructure.adapter.out.persistence.jpa.ProgramsJpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
+@Repository
 public class ProgramsRepositoryInMemory implements ProgramsRepository {
 
+    private final ProgramsJpaRepository programsJpaRepository;
 
-    private final List<Programs> programs = Collections.synchronizedList(new ArrayList<>());
+    public ProgramsRepositoryInMemory(ProgramsJpaRepository programsJpaRepository) {
+        this.programsJpaRepository = programsJpaRepository;
+    }
 
     @Override
     public Programs create(Programs program) {
-        if (!existsByCode(program.getCode())) {
-            programs.add(program);
-            return program;
-        }
-        return null;
+        return programsJpaRepository.save(program);
     }
 
     @Override
     public List<Programs> findAll() {
-        return new ArrayList<>(programs);
+        return programsJpaRepository.findAll();
     }
 
     @Override
     public Programs findById(Long programId) {
-
-        long id = programId != null ? programId : -1;
-        for (Programs p : programs) {
-            if (p.getProgramId() == id) {
-                return p;
-            }
-        }
-        return null;
+        return programsJpaRepository.findById(programId).orElse(null);
     }
 
     @Override
     public Programs findByCode(String code) {
-        Optional<Programs> program = programs.stream()
-                .filter(p -> p.getCode().equalsIgnoreCase(code))
-                .findFirst();
-        return program.orElse(null);
+        return programsJpaRepository.findByCode(code);
     }
 
     @Override
     public boolean update(Programs program) {
-        for (int i = 0; i < programs.size(); i++) {
-            if (programs.get(i).getProgramId() == program.getProgramId()) {
-                programs.set(i, program);
-                return true;
-            }
+        if (program == null || program.getProgramId() == null
+                || !programsJpaRepository.existsById(program.getProgramId())) {
+            return false;
         }
-        return false;
+
+        programsJpaRepository.save(program);
+        return true;
     }
 
     @Override
     public boolean delete(Long programId) {
-        long id = programId != null ? programId : -1;
-        return programs.removeIf(p -> p.getProgramId() == id);
+        if (!programsJpaRepository.existsById(programId)) {
+            return false;
+        }
+
+        programsJpaRepository.deleteById(programId);
+        return true;
     }
 
     @Override
     public boolean existsByCode(String code) {
-        return programs.stream()
-                .anyMatch(p -> p.getCode().equalsIgnoreCase(code));
+        return programsJpaRepository.existsByCode(code);
     }
 
     @Override
     public int count() {
-        return programs.size();
+        return (int) programsJpaRepository.count();
     }
 }

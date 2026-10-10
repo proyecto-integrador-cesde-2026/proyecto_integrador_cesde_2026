@@ -1,65 +1,76 @@
 package co.edu.cesde.ga.infrastructure.adapter.out.persistence.inmemory;
 
 import co.edu.cesde.ga.domain.model.Subject;
-import co.edu.cesde.ga.application.port.out.SubjectsRepository;
+import co.edu.cesde.ga.domain.model.port.out.SubjectsRepository;
+import co.edu.cesde.ga.infrastructure.adapter.out.persistence.jpa.SubjectJpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
+@Repository
 public class SubjectsRepositoryInMemory implements SubjectsRepository {
 
-    // Lista sincronizada para seguridad en hilos (opcional)
-    private final List<Subject> subjects = Collections.synchronizedList(new ArrayList<>());
+    private final SubjectJpaRepository subjectJpaRepository;
+
+    public SubjectsRepositoryInMemory(SubjectJpaRepository subjectJpaRepository) {
+        this.subjectJpaRepository = subjectJpaRepository;
+    }
 
     @Override
     public Subject create(Subject subject) {
-        if (!existsByCode(subject.getCode())) {
-            subjects.add(subject);
-            return subject;
-        }
-        return null; // ya existe
+        return subjectJpaRepository.save(subject);
     }
 
     @Override
     public boolean existsByCode(String code) {
-        return subjects.stream()
-                .anyMatch(s -> s.getCode().equalsIgnoreCase(code));
+        return subjectJpaRepository.existsByCode(code);
+    }
+
+
+    @Override
+    public boolean existsById(Long subjectId) {
+        return subjectJpaRepository.existsById(subjectId);
     }
 
     @Override
     public Subject findByCode(String code) {
-        Optional<Subject> subject = subjects.stream()
-                .filter(s -> s.getCode().equalsIgnoreCase(code))
-                .findFirst();
-        return subject.orElse(null);
+        return subjectJpaRepository.findByCode(code);
     }
 
     @Override
     public List<Subject> findAll() {
-        return new ArrayList<>(subjects); // devolvemos copia
+        return subjectJpaRepository.findAll();
     }
 
     @Override
     public boolean delete(String code) {
-        return subjects.removeIf(s -> s.getCode().equalsIgnoreCase(code));
+        Subject subject = subjectJpaRepository.findByCode(code);
+
+        if (subject == null) {
+            return false;
+        }
+
+        subjectJpaRepository.delete(subject);
+        return true;
     }
 
     @Override
     public int count() {
-        return subjects.size();
+        return (int) subjectJpaRepository.count();
     }
+
 
     @Override
     public boolean update(Subject subject) {
-        for (int i = 0; i < subjects.size(); i++) {
-            if (subjects.get(i).getCode().equalsIgnoreCase(subject.getCode())) {
-                // Reemplaza completamente el objeto
-                subjects.set(i, subject);
-                return true;
-            }
+        if (subject == null
+                || subject.getSubjectId() == null
+                || !subjectJpaRepository.existsById(subject.getSubjectId())) {
+            return false;
         }
-        return false; // no encontrado
+
+        subjectJpaRepository.save(subject);
+        return true;
     }
+
 }
+

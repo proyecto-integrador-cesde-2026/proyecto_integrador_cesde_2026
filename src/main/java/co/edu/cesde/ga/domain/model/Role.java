@@ -19,6 +19,7 @@ public class Role {
     @Id
     @NotNull
     @Column(name = "role_id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long roleId;
 
     // Un rol puede tener muchos registros en UserRole

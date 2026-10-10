@@ -1,108 +1,69 @@
 package co.edu.cesde.ga.infrastructure.adapter.out.persistence.inmemory;
 
 import co.edu.cesde.ga.domain.model.Groups;
-import co.edu.cesde.ga.application.port.out.GroupRepository;
+import co.edu.cesde.ga.domain.model.port.out.GroupRepository;
+import co.edu.cesde.ga.infrastructure.adapter.out.persistence.jpa.GroupsJpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class GroupRepositoryInMemory implements GroupRepository {
 
-    private List<Groups> groups;
-    private Long nextGroupId;
+    private final GroupsJpaRepository groupsJpaRepository;
 
-    public GroupRepositoryInMemory() {
-        this.groups = new ArrayList<>();
-        this.nextGroupId = 1L;
+    public GroupRepositoryInMemory(GroupsJpaRepository groupsJpaRepository) {
+        this.groupsJpaRepository = groupsJpaRepository;
     }
 
     @Override
     public Groups create(Groups group) {
-        if (group == null) {
-            return null;
-        }
-
-        group.setGroupId(nextGroupId++);
-        groups.add(group);
-        return group;
+        return groupsJpaRepository.save(group);
     }
 
     @Override
     public boolean existsById(Long groupsId) {
-        if (groupsId == null) return false;
-
-        for (Groups group : groups) {
-            if (groupsId.equals(group.getGroupId())) {
-                return true;
-            }
-        }
-        return false;
+        return groupsJpaRepository.existsById(groupsId);
     }
 
     @Override
     public List<Groups> findAll() {
-        return new ArrayList<>(groups);
+        return groupsJpaRepository.findAll();
     }
 
     @Override
     public Groups findById(Long groupId) {
-        if (groupId == null || groupId <= 0) {
-            return null;
-        }
-
-        for (Groups group : groups) {
-            if (groupId.equals(group.getGroupId())) {
-                return group;
-            }
-        }
-        return null;
+        return groupsJpaRepository.findById(groupId).orElse(null);
     }
 
     @Override
     public List<Groups> findByProgramId(Long programId) {
-        List<Groups> result = new ArrayList<>();
-
-        if (programId == null) {
-            return result;
-        }
-
-        for (Groups group : groups) {
-            if (group.getProgram() != null
-                    && programId.equals(group.getProgram().getProgramId())) {
-                result.add(group);
-            }
-        }
-
-        return result;
+        return groupsJpaRepository.findByProgram_ProgramId(programId);
     }
 
     @Override
-    public boolean update(Groups updatedGroup) {
-        if (updatedGroup == null) return false;
-
-        for (int i = 0; i < groups.size(); i++) {
-            if (updatedGroup.getGroupId().equals(groups.get(i).getGroupId())) {
-                groups.set(i, updatedGroup);
-                return true;
-            }
+    public boolean update(Groups group) {
+        if (group == null || group.getGroupId() == null
+                || !groupsJpaRepository.existsById(group.getGroupId())) {
+            return false;
         }
-        return false;
+
+        groupsJpaRepository.save(group);
+        return true;
     }
 
     @Override
     public boolean delete(Long groupId) {
-        Groups group = findById(groupId);
-
-        if (group == null) {
+        if (!groupsJpaRepository.existsById(groupId)) {
             return false;
         }
 
-        groups.remove(group);
+        groupsJpaRepository.deleteById(groupId);
         return true;
     }
 
     @Override
     public int count() {
-        return groups.size();
+        return (int) groupsJpaRepository.count();
     }
 }
