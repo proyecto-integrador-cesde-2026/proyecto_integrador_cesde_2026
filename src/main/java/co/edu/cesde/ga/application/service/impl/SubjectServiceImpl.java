@@ -1,19 +1,27 @@
 package co.edu.cesde.ga.application.service.impl;
 
-import co.edu.cesde.ga.exceptions.DuplicateException;
-import co.edu.cesde.ga.exceptions.InvalidDataException;
-import co.edu.cesde.ga.exceptions.NotFoundException;
+import co.edu.cesde.ga.domain.model.exceptions.DuplicateException;
+import co.edu.cesde.ga.domain.model.exceptions.InvalidDataException;
+import co.edu.cesde.ga.domain.model.exceptions.NotFoundException;
 import co.edu.cesde.ga.domain.model.Subject;
-import co.edu.cesde.ga.application.port.out.SubjectsRepository;
-import co.edu.cesde.ga.application.port.in.SubjectService;
-import java.util.List;
+import co.edu.cesde.ga.domain.model.port.out.SubjectsRepository;
+import co.edu.cesde.ga.domain.model.port.in.SubjectService;
+import co.edu.cesde.ga.domain.model.Programs;
+import co.edu.cesde.ga.domain.model.port.out.ProgramsRepository;
+import org.springframework.stereotype.Service;
 
+import java.util.List;
+@Service
 public class SubjectServiceImpl implements SubjectService {
 
     private final SubjectsRepository subjectsRepository;
+    private final ProgramsRepository programsRepository;
 
-    public SubjectServiceImpl(SubjectsRepository subjectsRepository) {
+    public SubjectServiceImpl(
+            SubjectsRepository subjectsRepository,
+            ProgramsRepository programsRepository) {
         this.subjectsRepository = subjectsRepository;
+        this.programsRepository = programsRepository;
     }
 
     @Override
@@ -23,30 +31,76 @@ public class SubjectServiceImpl implements SubjectService {
             throw new InvalidDataException("La materia no puede ser nula");
         }
 
+        if (subject.getProgram() == null
+                || subject.getProgram().getProgramId() == null) {
+            throw new InvalidDataException("El programa es obligatorio");
+        }
+
+        Programs program = programsRepository.findById(
+                subject.getProgram().getProgramId()
+        );
+
+        if (program == null) {
+            throw new NotFoundException("Programa no encontrado");
+        }
+
+        subject.setProgram(program);
+
         if (isInvalidSubject(subject)) {
             throw new InvalidDataException("Datos inválidos");
         }
 
         if (subjectsRepository.existsByCode(subject.getCode())) {
-            throw new DuplicateException("Ya existe una materia con ese código");
+            throw new DuplicateException(
+                    "Ya existe una materia con ese código"
+            );
         }
 
         return subjectsRepository.create(subject);
     }
 
+
     @Override
     public boolean update(Subject subject) {
 
-        if (subject == null || subject.getSubjectId() <= 0L) {
+        if (subject == null
+                || subject.getSubjectId() == null
+                || subject.getSubjectId() <= 0L) {
             throw new InvalidDataException("ID inválido");
         }
 
-        if (!subjectsRepository.existsByCode(subject.getCode())) {
+        if (!subjectsRepository.existsById(subject.getSubjectId())) {
             throw new NotFoundException("Materia no encontrada");
         }
 
+        if (subject.getProgram() == null
+                || subject.getProgram().getProgramId() == null) {
+            throw new InvalidDataException("El programa es obligatorio");
+        }
+
+        Programs program = programsRepository.findById(
+                subject.getProgram().getProgramId()
+        );
+
+        if (program == null) {
+            throw new NotFoundException("Programa no encontrado");
+        }
+
+        subject.setProgram(program);
+
         if (isInvalidSubject(subject)) {
             throw new InvalidDataException("Datos inválidos");
+        }
+
+        Subject existingSubject = subjectsRepository.findByCode(
+                subject.getCode()
+        );
+
+        if (existingSubject != null
+                && !existingSubject.getSubjectId().equals(subject.getSubjectId())) {
+            throw new DuplicateException(
+                    "Ya existe otra materia con ese código"
+            );
         }
 
         return subjectsRepository.update(subject);

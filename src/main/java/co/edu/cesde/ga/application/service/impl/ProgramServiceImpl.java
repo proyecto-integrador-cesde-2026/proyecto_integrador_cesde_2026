@@ -1,13 +1,15 @@
 package co.edu.cesde.ga.application.service.impl;
 
-import co.edu.cesde.ga.exceptions.DuplicateException;
-import co.edu.cesde.ga.exceptions.InvalidDataException;
-import co.edu.cesde.ga.exceptions.NotFoundException;
+import co.edu.cesde.ga.domain.model.exceptions.DuplicateException;
+import co.edu.cesde.ga.domain.model.exceptions.InvalidDataException;
+import co.edu.cesde.ga.domain.model.exceptions.NotFoundException;
 import co.edu.cesde.ga.domain.model.Programs;
-import co.edu.cesde.ga.application.port.out.ProgramsRepository;
-import co.edu.cesde.ga.application.port.in.ProgramService;
-import java.util.List;
+import co.edu.cesde.ga.domain.model.port.out.ProgramsRepository;
+import co.edu.cesde.ga.domain.model.port.in.ProgramService;
+import org.springframework.stereotype.Service;
 
+import java.util.List;
+@Service
 public class ProgramServiceImpl implements ProgramService {
 
     private final ProgramsRepository programsRepository;
