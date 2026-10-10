@@ -1,120 +1,68 @@
 package co.edu.cesde.ga.infrastructure.adapter.out.persistence.inmemory;
 
 import co.edu.cesde.ga.domain.model.Teacher;
-import co.edu.cesde.ga.application.port.out.TeacherRepository;
+import co.edu.cesde.ga.domain.model.port.out.TeacherRepository;
+import co.edu.cesde.ga.infrastructure.adapter.out.persistence.jpa.TeacherJpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class TeacherRepositoryInMemory implements TeacherRepository {
 
-    private List<Teacher> teachers;
-    private long nextTeacherId;
+    private final TeacherJpaRepository teacherJpaRepository;
 
-    public TeacherRepositoryInMemory() {
-        this.teachers = new ArrayList<>();
-        this.nextTeacherId = 1L;
+    public TeacherRepositoryInMemory(TeacherJpaRepository teacherJpaRepository) {
+        this.teacherJpaRepository = teacherJpaRepository;
     }
 
     @Override
     public Teacher create(Teacher teacher) {
-        if (teacher == null) {
-            return null;
-        }
-
-        if (existsByDocumentNumber(teacher.getDocumentNumber())) {
-            return null;
-        }
-
-        teacher.setTeacherId(nextTeacherId++);
-        teachers.add(teacher);
-        return teacher;
+        return teacherJpaRepository.save(teacher);
     }
 
-    // 🔥 VALIDAR SI EXISTE POR DOCUMENTO
-    public boolean existsByDocumentNumber(String documentNumber) {
-        if (documentNumber == null || documentNumber.isBlank()) {
-            return false;
-        }
-        return findByDocumentNumber(documentNumber) != null;
-    }
-
-    // 🔥 BUSCAR POR DOCUMENTO
-    public Teacher findByDocumentNumber(String documentNumber) {
-        if (documentNumber == null || documentNumber.isBlank()) {
+    @Override
+    public Teacher update(Teacher teacher) {
+        if (teacher == null || !teacherJpaRepository.existsById(teacher.getTeacherId())) {
             return null;
         }
 
-        for (Teacher teacher : teachers) {
-            if (documentNumber.equals(teacher.getDocumentNumber())) {
-                return teacher;
-            }
-        }
-        return null;
+        return teacherJpaRepository.save(teacher);
     }
 
     @Override
     public List<Teacher> findAll() {
-        return new ArrayList<>(teachers);
+        return teacherJpaRepository.findAll();
     }
 
     @Override
     public Teacher findById(Long id) {
-        if (id == null || id <= 0) {
-            return null;
-        }
-
-        for (Teacher teacher : teachers) {
-            if (id.equals(teacher.getTeacherId())) {
-                return teacher;
-            }
-        }
-        return null;
+        return teacherJpaRepository.findById(id).orElse(null);
     }
 
     @Override
     public Teacher findByName(String name) {
-        if (name == null || name.isBlank()) {
-            return null;
-        }
-
-        for (Teacher teacher : teachers) {
-            if (name.equalsIgnoreCase(teacher.getFirstName())) {
-                return teacher;
-            }
-        }
-        return null;
+        return teacherJpaRepository.findByFirstNameContainingIgnoreCase(name);
     }
 
     @Override
     public boolean existsById(Long id) {
-        return findById(id) != null;
+        return teacherJpaRepository.existsById(id);
     }
 
     @Override
     public boolean delete(Long id) {
-        Teacher teacher = findById(id);
-        if (teacher == null) return false;
+        if (!teacherJpaRepository.existsById(id)) {
+            return false;
+        }
 
-        teachers.remove(teacher);
+        teacherJpaRepository.deleteById(id);
         return true;
     }
 
     @Override
     public int count() {
-        return teachers.size();
-    }
-
-    @Override
-    public Teacher update(Teacher updatedTeacher) {
-        if (updatedTeacher == null) return null;
-
-        for (int i = 0; i < teachers.size(); i++) {
-            if (updatedTeacher.getTeacherId() == teachers.get(i).getTeacherId()) {
-                teachers.set(i, updatedTeacher);
-                return updatedTeacher;
-            }
-        }
-        return null;
+        return (int) teacherJpaRepository.count();
     }
 }
+

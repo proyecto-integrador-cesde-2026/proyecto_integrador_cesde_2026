@@ -1,19 +1,33 @@
 package co.edu.cesde.ga.application.service.impl;
 
-import co.edu.cesde.ga.exceptions.DuplicateException;
-import co.edu.cesde.ga.exceptions.InvalidDataException;
-import co.edu.cesde.ga.exceptions.NotFoundException;
+import co.edu.cesde.ga.domain.model.exceptions.DuplicateException;
+import co.edu.cesde.ga.domain.model.exceptions.InvalidDataException;
+import co.edu.cesde.ga.domain.model.exceptions.NotFoundException;
 import co.edu.cesde.ga.domain.model.Enrollment;
-import co.edu.cesde.ga.application.port.out.EnrollmentRepository;
-import co.edu.cesde.ga.application.port.in.EnrollmentService;
-import java.util.List;
+import co.edu.cesde.ga.domain.model.port.out.EnrollmentRepository;
+import co.edu.cesde.ga.domain.model.port.in.EnrollmentService;
+import co.edu.cesde.ga.domain.model.port.out.GroupRepository;
+import co.edu.cesde.ga.domain.model.port.out.PeriodRepository;
+import co.edu.cesde.ga.domain.model.port.out.StudentRepository;
+import org.springframework.stereotype.Service;
 
+import java.util.List;
+@Service
 public class EnrollmentServiceImpl implements EnrollmentService {
 
     private final EnrollmentRepository enrollmentRepository;
+    private final StudentRepository studentRepository;
+    private final GroupRepository groupRepository;
+    private final PeriodRepository periodRepository;
 
-    public EnrollmentServiceImpl(EnrollmentRepository enrollmentRepository) {
+    public EnrollmentServiceImpl(EnrollmentRepository enrollmentRepository ,
+                                 StudentRepository studentRepository,
+                                 GroupRepository groupRepository,
+                                 PeriodRepository periodRepository) {
         this.enrollmentRepository = enrollmentRepository;
+        this.studentRepository = studentRepository;
+        this.groupRepository = groupRepository;
+        this.periodRepository = periodRepository;
     }
 
     @Override
@@ -93,12 +107,38 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     private boolean isInvalidEnrollment(Enrollment enrollment) {
         return enrollment == null
-                || enrollment.getEnrollmentId() == null
+                || enrollment.getStudent() == null
                 || enrollment.getStudent().getStudentId() == null
+                || enrollment.getGroup() == null
                 || enrollment.getGroup().getGroupId() == null
+                || enrollment.getPeriod() == null
                 || enrollment.getPeriod().getPeriodId() == null
                 || !isNotBlank(enrollment.getStatus());
     }
+
+    public Enrollment createFromIds(
+            Long studentId,
+            Long groupId,
+            Long periodId,
+            String status) {
+
+        if (studentId == null || studentId <= 0
+                || groupId == null || groupId <= 0
+                || periodId == null || periodId <= 0
+                || status == null || status.trim().isEmpty()) {
+            throw new InvalidDataException("Datos de matrícula inválidos");
+        }
+
+        Enrollment enrollment = new Enrollment();
+
+        enrollment.setStudent(studentRepository.findById(studentId));
+        enrollment.setGroup(groupRepository.findById(groupId));
+        enrollment.setPeriod(periodRepository.findById(periodId));
+        enrollment.setStatus(status);
+
+        return create(enrollment);
+    }
+
 
     private boolean isNotBlank(String value) {
         return value != null && !value.trim().isEmpty();

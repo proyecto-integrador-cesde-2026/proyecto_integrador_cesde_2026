@@ -1,13 +1,16 @@
 package co.edu.cesde.ga.application.service.impl;
 
-import co.edu.cesde.ga.exceptions.DuplicateException;
-import co.edu.cesde.ga.exceptions.InvalidDataException;
-import co.edu.cesde.ga.exceptions.NotFoundException;
 import co.edu.cesde.ga.domain.model.UserRole;
-import co.edu.cesde.ga.application.port.out.UserRoleRepository;
-import co.edu.cesde.ga.application.port.in.UserRoleService;
+import co.edu.cesde.ga.domain.model.exceptions.DuplicateException;
+import co.edu.cesde.ga.domain.model.exceptions.InvalidDataException;
+import co.edu.cesde.ga.domain.model.exceptions.NotFoundException;
+import co.edu.cesde.ga.domain.model.port.in.UserRoleService;
+import co.edu.cesde.ga.domain.model.port.out.UserRoleRepository;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 
+@Service
 public class UserRoleServiceImpl implements UserRoleService {
 
     private final UserRoleRepository userRoleRepository;
@@ -16,13 +19,8 @@ public class UserRoleServiceImpl implements UserRoleService {
         this.userRoleRepository = userRoleRepository;
     }
 
-
     @Override
     public UserRole create(UserRole userRole) {
-
-        if (userRole == null) {
-            throw new InvalidDataException("La relación usuario-rol no puede ser nula");
-        }
 
         if (isInvalidUserRole(userRole)) {
             throw new InvalidDataException("Datos inválidos");
@@ -41,7 +39,8 @@ public class UserRoleServiceImpl implements UserRoleService {
     @Override
     public boolean delete(Long userId, Long roleId) {
 
-        if (userId <= 0 || roleId <= 0) {
+        if (userId == null || roleId == null
+                || userId <= 0 || roleId <= 0) {
             throw new InvalidDataException("IDs inválidos");
         }
 
@@ -52,10 +51,11 @@ public class UserRoleServiceImpl implements UserRoleService {
         return userRoleRepository.delete(userId, roleId);
     }
 
-
     @Override
     public boolean existsByUserIdAndRoleId(Long userId, Long roleId) {
-        if (userId <= 0 || roleId <= 0) {
+
+        if (userId == null || roleId == null
+                || userId <= 0 || roleId <= 0) {
             throw new InvalidDataException("IDs inválidos");
         }
 
@@ -65,7 +65,7 @@ public class UserRoleServiceImpl implements UserRoleService {
     @Override
     public List<UserRole> findByUserId(Long userId) {
 
-        if (userId <= 0) {
+        if (userId == null || userId <= 0) {
             throw new InvalidDataException("User ID inválido");
         }
 
@@ -78,11 +78,10 @@ public class UserRoleServiceImpl implements UserRoleService {
         return userRoles;
     }
 
-
     @Override
     public List<UserRole> findByRoleId(Long roleId) {
 
-        if (roleId <= 0) {
+        if (roleId == null || roleId <= 0) {
             throw new InvalidDataException("Role ID inválido");
         }
 
@@ -94,6 +93,7 @@ public class UserRoleServiceImpl implements UserRoleService {
 
         return userRoles;
     }
+
     @Override
     public List<UserRole> findAll() {
         return userRoleRepository.findAll();
@@ -102,7 +102,10 @@ public class UserRoleServiceImpl implements UserRoleService {
     private boolean isInvalidUserRole(UserRole userRole) {
 
         return userRole == null
+                || userRole.getUserId() == null
+                || userRole.getRoleId() == null
                 || userRole.getUserId() <= 0
                 || userRole.getRoleId() <= 0;
     }
 }
+

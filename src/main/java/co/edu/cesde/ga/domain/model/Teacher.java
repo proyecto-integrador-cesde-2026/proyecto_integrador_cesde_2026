@@ -16,6 +16,7 @@ public class Teacher extends Person {
 
     @Id
     @Column(name = "teacher_id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long teacherId;
 
     // Un profesor puede tener muchos grupos-materia

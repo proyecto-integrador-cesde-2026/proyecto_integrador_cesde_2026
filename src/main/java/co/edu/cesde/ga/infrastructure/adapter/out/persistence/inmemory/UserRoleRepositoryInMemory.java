@@ -1,75 +1,65 @@
 package co.edu.cesde.ga.infrastructure.adapter.out.persistence.inmemory;
 
 import co.edu.cesde.ga.domain.model.UserRole;
-import co.edu.cesde.ga.application.port.out.UserRoleRepository;
+import co.edu.cesde.ga.domain.model.port.out.UserRoleRepository;
+import co.edu.cesde.ga.infrastructure.adapter.out.persistence.jpa.UserRoleJpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class UserRoleRepositoryInMemory implements UserRoleRepository {
 
-    private List<UserRole> userRoles;
+    private final UserRoleJpaRepository userRoleJpaRepository;
 
-    public UserRoleRepositoryInMemory() {
-        this.userRoles = new ArrayList<>();
+    public UserRoleRepositoryInMemory(
+            UserRoleJpaRepository userRoleJpaRepository) {
+        this.userRoleJpaRepository = userRoleJpaRepository;
     }
 
     @Override
     public UserRole create(UserRole userRole) {
-        if (userRole == null) return null;
-
-        if (existsByUserIdAndRoleId(userRole.getUserId(), userRole.getRoleId())) return null;
-
-        userRoles.add(userRole);
-        return userRole;
+        return userRoleJpaRepository.save(userRole);
     }
 
     @Override
     public boolean existsByUserIdAndRoleId(Long userId, Long roleId) {
-        return findByUserId(userId).stream()
-                .anyMatch(ur -> ur.getRoleId() == roleId);
+        return userRoleJpaRepository
+                .existsByUser_UserIdAndRole_RoleId(userId, roleId);
     }
 
     @Override
     public List<UserRole> findByUserId(Long userId) {
-        if (userId <= 0) return new ArrayList<>();
-
-        List<UserRole> result = new ArrayList<>();
-        for (UserRole ur : userRoles) {
-            if (ur.getUserId() == userId) result.add(ur);
-        }
-        return result;
+        return userRoleJpaRepository.findByUser_UserId(userId);
     }
 
     @Override
     public List<UserRole> findByRoleId(Long roleId) {
-        if (roleId <= 0) return new ArrayList<>();
-
-        List<UserRole> result = new ArrayList<>();
-        for (UserRole ur : userRoles) {
-            if (ur.getRoleId() == roleId) result.add(ur);
-        }
-        return result;
+        return userRoleJpaRepository.findByRole_RoleId(roleId);
     }
 
     @Override
     public List<UserRole> findAll() {
-        return new ArrayList<>(userRoles);
+        return userRoleJpaRepository.findAll();
     }
 
     @Override
     public boolean delete(Long userId, Long roleId) {
-        for (UserRole ur : userRoles) {
-            if (ur.getUserId() == userId && ur.getRoleId() == roleId) {
-                userRoles.remove(ur);
+        List<UserRole> userRoles =
+                userRoleJpaRepository.findByUser_UserId(userId);
+
+        for (UserRole userRole : userRoles) {
+            if (userRole.getRole().getRoleId().equals(roleId)) {
+                userRoleJpaRepository.delete(userRole);
                 return true;
             }
         }
+
         return false;
     }
 
     @Override
     public int count() {
-        return userRoles.size();
+        return (int) userRoleJpaRepository.count();
     }
 }

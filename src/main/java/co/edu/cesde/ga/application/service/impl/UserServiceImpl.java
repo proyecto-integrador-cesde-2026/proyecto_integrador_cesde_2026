@@ -1,13 +1,16 @@
 package co.edu.cesde.ga.application.service.impl;
 
-import co.edu.cesde.ga.exceptions.DuplicateException;
-import co.edu.cesde.ga.exceptions.InvalidDataException;
-import co.edu.cesde.ga.exceptions.NotFoundException;
+import co.edu.cesde.ga.domain.model.exceptions.DuplicateException;
+import co.edu.cesde.ga.domain.model.exceptions.InvalidDataException;
+import co.edu.cesde.ga.domain.model.exceptions.NotFoundException;
 import co.edu.cesde.ga.domain.model.User;
-import co.edu.cesde.ga.application.port.out.UserRepository;
-import co.edu.cesde.ga.application.port.in.UserService;
-import java.util.List;
+import co.edu.cesde.ga.domain.model.port.out.UserRepository;
+import co.edu.cesde.ga.domain.model.port.in.UserService;
+import java.time.LocalDateTime;
+import org.springframework.stereotype.Service;
 
+import java.util.List;
+@Service
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -23,12 +26,20 @@ public class UserServiceImpl implements UserService {
             throw new InvalidDataException("El usuario no puede ser nulo");
         }
 
+        if (user.getCreatedAt() == null) {
+            user.setCreatedAt(LocalDateTime.now());
+        }
+
         if (isInvalidUser(user)) {
             throw new InvalidDataException("Datos inválidos");
         }
 
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new DuplicateException("Ya existe un usuario con ese email");
+        }
+
+        if (userRepository.existsByUsername(user.getUsername())) {
+            throw new DuplicateException("Ya existe un usuario con ese username");
         }
 
         return userRepository.create(user);

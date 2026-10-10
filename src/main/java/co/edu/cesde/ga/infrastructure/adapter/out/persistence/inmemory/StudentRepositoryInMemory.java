@@ -1,103 +1,71 @@
+
 package co.edu.cesde.ga.infrastructure.adapter.out.persistence.inmemory;
 
 import co.edu.cesde.ga.domain.model.Student;
-import co.edu.cesde.ga.application.port.out.StudentRepository;
+import co.edu.cesde.ga.domain.model.port.out.StudentRepository;
+import co.edu.cesde.ga.infrastructure.adapter.out.persistence.jpa.StudentJpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class StudentRepositoryInMemory implements StudentRepository {
 
-    private List<Student> students;
-    private long nextStudentId;
+    private final StudentJpaRepository studentJpaRepository;
 
-    public StudentRepositoryInMemory(){
-        this.students = new ArrayList<>();
-        this.nextStudentId = 1L;
+    public StudentRepositoryInMemory(StudentJpaRepository studentJpaRepository) {
+        this.studentJpaRepository = studentJpaRepository;
     }
-
-
 
     @Override
     public Student create(Student student) {
         if (student == null) {
             return null;
         }
-
-        if (existsByDocumentNumber(student.getDocumentNumber())){
-            return null;
-        }
-
-        student.setStudentId(nextStudentId++);
-        students.add(student);
-        return student;
+        return studentJpaRepository.save(student);
     }
 
     @Override
     public boolean existsByDocumentNumber(String documentNumber) {
-        if (documentNumber == null || documentNumber.isBlank()){
-            return false;
-        }
-        return findByDocumentNumber(documentNumber) != null;
+        return studentJpaRepository.existsByDocumentNumber(documentNumber);
     }
 
     @Override
-    public Student findByDocumentNumber(String documentNumber){
-        if (documentNumber == null || documentNumber.isBlank()) {
-            return null;
-        }
-
-        for (Student student : students) {
-            if (documentNumber.equals(student.getDocumentNumber())) {
-                return student;
-            }
-        }
-        return null;
+    public Student findByDocumentNumber(String documentNumber) {
+        return studentJpaRepository.findByDocumentNumber(documentNumber);
     }
 
     @Override
     public List<Student> findAll() {
-        return new ArrayList<>(students);
+        return studentJpaRepository.findAll();
     }
 
     @Override
     public Student findById(Long studentId) {
-        if (studentId <= 0 ){
-            return null;
-        }
-
-        for (Student student : students) {
-            if (studentId == student.getStudentId()){
-                return student;
-            }
-        }
-        return null;
+        return studentJpaRepository.findById(studentId).orElse(null);
     }
 
     @Override
     public boolean delete(Long studentId) {
-        Student student = findById(studentId);
-        if (student == null) return false;
-
-        students.remove(student);
+        if (!studentJpaRepository.existsById(studentId)) {
+            return false;
+        }
+        studentJpaRepository.deleteById(studentId);
         return true;
     }
 
     @Override
     public int count() {
-        return students.size();
+        return (int) studentJpaRepository.count();
     }
 
     @Override
-    public boolean update(Student updatedStudent) {
-        if (updatedStudent == null ) return false;
-
-        for (int i = 0; i < students.size(); i++){
-            if (updatedStudent.getStudentId() == students.get(i).getStudentId()){
-                students.set(i, updatedStudent);
-                return true;
-            }
+    public boolean update(Student student) {
+        if (student == null || student.getStudentId() == null
+                || !studentJpaRepository.existsById(student.getStudentId())) {
+            return false;
         }
-        return false;
+        studentJpaRepository.save(student);
+        return true;
     }
 }
